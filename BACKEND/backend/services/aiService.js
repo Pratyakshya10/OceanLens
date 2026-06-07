@@ -1,12 +1,10 @@
 const Groq = require('groq-sdk')
 const fs = require('fs')
 require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') })
-console.log('GROQ KEY:', process.env.GROQ_API_KEY ? 'FOUND' : 'MISSING')
-
 
 let groq = null
 const getGroq = () => {
-  if (!groq) groq = new Groq({ apiKey: process.env.GROQ_API_KEY})
+  if (!groq) groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
   return groq
 }
 
@@ -20,11 +18,27 @@ Return ONLY valid JSON, no markdown, no backticks, no extra text:
 }
 CoralWatch scale: 0=healthy, 1=pale, 2=partial bleach, 3=mostly bleached, 4=fully bleached.`
 
-const analyzeImage = async (imagePath, lang = 'en') => {
+const analyzeImage = async (imagePathOrUrl, lang = 'en') => {
   try {
-    const imageData = fs.readFileSync(imagePath).toString('base64')
-    const ext = imagePath.split('.').pop().toLowerCase()
-    const mimeType = ext === 'png' ? 'image/png' : 'image/jpeg'
+    let imageContent
+
+    // Check if it's a Cloudinary URL or a local file path
+    if (imagePathOrUrl.startsWith('http')) {
+      // Cloudinary URL — pass directly as image_url
+      imageContent = {
+        type: 'image_url',
+        image_url: { url: imagePathOrUrl }
+      }
+    } else {
+      // Local file — read and convert to base64
+      const imageData = fs.readFileSync(imagePathOrUrl).toString('base64')
+      const ext = imagePathOrUrl.split('.').pop().toLowerCase()
+      const mimeType = ext === 'png' ? 'image/png' : 'image/jpeg'
+      imageContent = {
+        type: 'image_url',
+        image_url: { url: `data:${mimeType};base64,${imageData}` }
+      }
+    }
 
     const result = await getGroq().chat.completions.create({
       model: 'meta-llama/llama-4-scout-17b-16e-instruct',
@@ -33,7 +47,7 @@ const analyzeImage = async (imagePath, lang = 'en') => {
           role: 'user',
           content: [
             { type: 'text', text: PROMPT },
-            { type: 'image_url', image_url: { url: `data:${mimeType};base64,${imageData}` } }
+            imageContent
           ]
         }
       ],
