@@ -60,9 +60,13 @@ export default function SubmitPage() {
       fd.append('depth', depth)
       const data = await submitObservation(fd)
       setResult(data)
-    } catch {
-      setError('Submission failed. Make sure the backend is running.')
-    }
+    } catch (err) {
+  if (err.code === 1) {
+    setError('Location access denied. Please enable GPS or enter coordinates manually.')
+  } else {
+    setError('Submission failed. Make sure the backend is running.')
+  }
+}
     setLoading(false)
   }
 
