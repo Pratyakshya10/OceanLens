@@ -38,4 +38,30 @@ const getObservations = async (req, res) => {
   }
 }
 
-module.exports = { createObservation, getObservations }
+const exportCSV = async (req, res) => {
+  try {
+    const obs = await Observation.find().sort({ createdAt: -1 })
+    const headers = ['id', 'submitterName', 'lat', 'lng', 'species', 'bleachingLevel', 'aiSummary', 'confidence', 'aiProcessed', 'createdAt']
+    const rows = obs.map(o => [
+      o._id,
+      o.submitterName || 'Anonymous',
+      o.lat,
+      o.lng,
+      o.species || '',
+      o.bleachingLevel ?? '',
+      `"${(o.aiSummary || '').replace(/"/g, '""')}"`,
+      o.confidence ?? '',
+      o.aiProcessed,
+      o.createdAt.toISOString()
+    ].join(','))
+
+    const csv = [headers.join(','), ...rows].join('\n')
+    res.setHeader('Content-Type', 'text/csv')
+    res.setHeader('Content-Disposition', 'attachment; filename="oceanlens-observations.csv"')
+    res.send(csv)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+}
+
+module.exports = { createObservation, getObservations, exportCSV }
