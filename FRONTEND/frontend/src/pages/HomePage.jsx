@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
+
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
 function FishLoader() {
   const canvasRef = useRef(null)
@@ -46,6 +48,28 @@ function FishLoader() {
 }
 
 export default function HomePage() {
+  const [stats, setStats] = useState(null)
+
+  useEffect(() => {
+    fetch(`${API}/api/observations`)
+      .then(r => r.json())
+      .then(data => {
+        const totalObs = data.length
+        const uniqueSpecies = new Set(data.map(o => o.species).filter(Boolean)).size
+        const uniqueRegions = new Set(data.map(o => `${Math.round(o.lat)},${Math.round(o.lng)}`)).size
+        const aiProcessed = data.filter(o => o.aiProcessed).length
+        setStats({ totalObs, uniqueSpecies, uniqueRegions, aiProcessed })
+      })
+      .catch(() => setStats(null))
+  }, [])
+
+  const statCards = [
+    { num: stats ? stats.totalObs : '—', label: 'Observations logged' },
+    { num: stats ? stats.uniqueRegions : '—', label: 'Unique locations' },
+    { num: stats ? stats.uniqueSpecies : '—', label: 'Species tracked' },
+    { num: stats ? stats.aiProcessed : '—', label: 'AI analyzed' },
+  ]
+
   return (
     <div>
       {/* Hero */}
@@ -53,7 +77,7 @@ export default function HomePage() {
         <div className="flex-1">
           <div className="inline-flex items-center gap-2 bg-white border border-gray-200 rounded-full px-4 py-2 text-xs text-gray-600 mb-8">
             <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse"></span>
-            2,418 OBSERVATIONS THIS MONTH
+            {stats ? `${stats.totalObs} OBSERVATIONS LOGGED` : 'LOADING LIVE DATA...'}
           </div>
           <h1 className="font-serif text-6xl text-ocean-dark leading-tight mb-6">
             Every wave tells a story.<br/>We're listening.
@@ -80,12 +104,7 @@ export default function HomePage() {
       {/* Stats */}
       <section className="border-y border-gray-100 py-10 px-6">
         <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
-          {[
-            { num: '184k', label: 'Observations logged' },
-            { num: '62',   label: 'Coastal regions' },
-            { num: '1,204',label: 'Species tracked' },
-            { num: '38%',  label: 'Reefs improving' },
-          ].map(s => (
+          {statCards.map(s => (
             <div key={s.label}>
               <p className="font-serif text-4xl text-ocean-dark">{s.num}</p>
               <p className="text-gray-500 text-sm mt-1">{s.label}</p>
