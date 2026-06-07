@@ -98,7 +98,7 @@ Every submission appears as a colored pin. Click any pin to see the full AI anal
 Complete story on how it started
 ![Story](docs/images/story.png)
 ![Stats](docs/images/storystats.png)
-![sign off](docs/images/end.png)
+![Sign off](docs/images/end.png)
 
 
 ---
