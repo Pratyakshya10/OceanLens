@@ -4,7 +4,7 @@ const { analyzeImage } = require('../services/aiService')
 const createObservation = async (req, res) => {
   try {
     const { lat, lng, submitterName, language } = req.body
-    const imageUrl  = req.file ? `/uploads/${req.file.filename}` : null
+    const imageUrl  = req.file ? req.file.path : null  // Cloudinary returns full URL in req.file.path
     const imagePath = req.file ? req.file.path : null
 
     let aiResult = {
