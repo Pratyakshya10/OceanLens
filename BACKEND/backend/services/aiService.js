@@ -2,7 +2,11 @@ const Groq = require('groq-sdk')
 const fs = require('fs')
 require('dotenv').config()
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
+let groq = null
+const getGroq = () => {
+  if (!groq) groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
+  return groq
+}
 
 const PROMPT = `Analyze this marine or water body photo.
 Return ONLY valid JSON, no markdown, no backticks, no extra text:
@@ -20,7 +24,7 @@ const analyzeImage = async (imagePath, lang = 'en') => {
     const ext = imagePath.split('.').pop().toLowerCase()
     const mimeType = ext === 'png' ? 'image/png' : 'image/jpeg'
 
-    const result = await groq.chat.completions.create({
+    const result = await getGroq().chat.completions.create({
       model: 'meta-llama/llama-4-scout-17b-16e-instruct',
       messages: [
         {
