@@ -1,11 +1,10 @@
-require('dotenv').config()
+require('dotenv').config({ path: require('path').resolve(__dirname, '.env') })
 const express = require('express')
 const cors = require('cors')
 const connectDB = require('./config/db')
 const observationRoutes = require('./routes/observations')
 const mapRoutes = require('./routes/map')
 const errorHandler = require('./middleware/errorHandler')
-require('dotenv').config()
 
 connectDB()
 
