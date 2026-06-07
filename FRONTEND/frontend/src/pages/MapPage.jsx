@@ -167,7 +167,7 @@ export default function MapPage() {
 
                 {selected.imageUrl && (
                   <img
-                    src={`${API}${selected.imageUrl}`}
+                    src={selected.imageUrl.startsWith('http') ? selected.imageUrl : `${API}${selected.imageUrl}`}
                     alt="Observation"
                     className="w-full h-36 object-cover rounded-lg mb-4"
                   />
