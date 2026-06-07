@@ -10,6 +10,9 @@ export default function SubmitPage() {
   const [notes, setNotes]     = useState('')
   const [depth, setDepth]     = useState('')
   const [date, setDate]       = useState('')
+  const [manualLat, setManualLat] = useState('')
+  const [manualLng, setManualLng] = useState('')
+  const [useManual, setUseManual] = useState(false)
   const [loading, setLoading] = useState(false)
   const [result, setResult]   = useState(null)
   const [error, setError]     = useState(null)
@@ -25,12 +28,32 @@ export default function SubmitPage() {
     if (!file) return
     setLoading(true); setError(null)
     try {
-      const pos = await new Promise((res, rej) =>
-        navigator.geolocation.getCurrentPosition(res, rej))
+      let lat, lng
+
+      if (useManual) {
+        if (!manualLat || !manualLng) {
+          setError('Please enter latitude and longitude.')
+          setLoading(false)
+          return
+        }
+        lat = parseFloat(manualLat)
+        lng = parseFloat(manualLng)
+        if (isNaN(lat) || isNaN(lng)) {
+          setError('Invalid coordinates. Use format: 19.7167, 85.3167')
+          setLoading(false)
+          return
+        }
+      } else {
+        const pos = await new Promise((res, rej) =>
+          navigator.geolocation.getCurrentPosition(res, rej))
+        lat = pos.coords.latitude
+        lng = pos.coords.longitude
+      }
+
       const fd = new FormData()
       fd.append('image', file)
-      fd.append('lat', pos.coords.latitude)
-      fd.append('lng', pos.coords.longitude)
+      fd.append('lat', lat)
+      fd.append('lng', lng)
       fd.append('submitterName', name || 'Anonymous')
       fd.append('species', species)
       fd.append('notes', notes)
@@ -90,6 +113,41 @@ export default function SubmitPage() {
               placeholder="0"
               className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-teal-dark"/>
           </div>
+
+          {/* Location toggle */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-sm text-gray-600">Location</label>
+              <button
+                type="button"
+                onClick={() => setUseManual(!useManual)}
+                className="text-xs text-teal-600 underline hover:text-teal-800"
+              >
+                {useManual ? 'Use my GPS instead' : 'Enter coordinates manually'}
+              </button>
+            </div>
+            {useManual ? (
+              <div className="flex gap-2">
+                <input
+                  value={manualLat}
+                  onChange={e => setManualLat(e.target.value)}
+                  placeholder="Latitude e.g. 19.7167"
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-teal-dark"
+                />
+                <input
+                  value={manualLng}
+                  onChange={e => setManualLng(e.target.value)}
+                  placeholder="Longitude e.g. 85.3167"
+                  className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-teal-dark"
+                />
+              </div>
+            ) : (
+              <div className="border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-400 bg-gray-50">
+                📍 GPS location will be detected on submit
+              </div>
+            )}
+          </div>
+
           <div>
             <label className="text-sm text-gray-600 mb-1 block">Notes</label>
             <textarea value={notes} onChange={e => setNotes(e.target.value)}
