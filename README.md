@@ -73,17 +73,33 @@ OceanLens lets anyone with a phone submit a marine or freshwater observation. AI
 
 ## 🗺️ Walkthrough
 
-### 1. Submit — Upload photo with location and notes
-Anyone with a phone can submit. GPS auto-detects location or enter coordinates manually for remote sites.
+### 1. Home 
+An overview of what OceanLens is 
+![HomePage](docs/images/home.png)
 
-### 2. AI Analysis — Species identified, water health scored
-Groq Llama 4 Scout Vision analyzes the image and returns species, bleaching level (CoralWatch 0–4), AI summary, and confidence score.
+![Stats](docs/images/homestats.png)
+
+
+### 2. Submit — Upload photo with location and notes
+Anyone with a phone can submit. GPS auto-detects location or enter coordinates manually for remote sites.
+![Submit Observation](docs/images/Observation.png)
+
+
+### 2. AI Analysis Dashboard — Species identified, water health scored
+Groq Llama 4 Scout Vision analyzes the image and returns species, bleaching level (CoralWatch 0–4), AI summary, and confidence score.Export full dataset as CSV. 
+![Dashboard](docs/images/Dashboard.png)
+
 
 ### 3. Map — Live observation pins across India and the world
 Every submission appears as a colored pin. Click any pin to see the full AI analysis, image, and field notes.
+![Reef Map](docs/images/map.png)
 
-### 4. Dashboard — Community data at a glance
-Real-time counts of observations, species, AI analyses, and active locations. Export full dataset as CSV.
+### 4. Story Page -- Idea behind OceanLens
+Complete story on how it started
+![Story](docs/images/story.png)
+![Stats](docs/images/storystats.png)
+![sign off](docs/images/end.png)
+
 
 ---
 
