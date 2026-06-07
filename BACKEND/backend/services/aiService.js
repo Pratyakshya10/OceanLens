@@ -8,29 +8,32 @@ const getGroq = () => {
   return groq
 }
 
-const PROMPT = `Analyze this marine or water body photo.
+const PROMPT = `You are an expert marine and freshwater ecologist analyzing a water body photograph.
+
+Identify ALL visible species, organisms, or environmental subjects — including fish, birds, mammals, reptiles, insects, algae, aquatic plants, coral, jellyfish, plastic debris, pollution indicators, or any other subject visible near or in the water.
+
 Return ONLY valid JSON, no markdown, no backticks, no extra text:
 {
-  "species": "main species or subject visible, or null",
-  "bleachingLevel": 0-4 on CoralWatch scale or null if not coral,
-  "aiSummary": "2-3 plain sentences describing water health, species seen, and any concerns",
+  "species": "specific common name of the most prominent species, organism, or subject visible (e.g. 'Water hyacinth', 'Irrawaddy dolphin', 'Staghorn coral', 'Plastic debris', 'Cyanobacterial bloom', 'Flamingo') — never return null, always identify something",
+  "bleachingLevel": 0-4 on CoralWatch scale if coral is visible, otherwise null,
+  "aiSummary": "2-3 plain sentences describing: (1) what species or subject is visible, (2) the overall water health and ecosystem condition, (3) any environmental concerns or notable observations",
   "confidence": 0.0 to 1.0
 }
-CoralWatch scale: 0=healthy, 1=pale, 2=partial bleach, 3=mostly bleached, 4=fully bleached.`
+
+CoralWatch bleaching scale (only if coral visible): 0=healthy, 1=pale, 2=partial bleach, 3=mostly bleached, 4=fully bleached.
+
+If no living organism is visible, identify the dominant environmental feature (e.g. 'Plastic pollution', 'Industrial discharge', 'Algal bloom', 'Turbid water', 'Oil spill').`
 
 const analyzeImage = async (imagePathOrUrl, lang = 'en') => {
   try {
     let imageContent
 
-    // Check if it's a Cloudinary URL or a local file path
     if (imagePathOrUrl.startsWith('http')) {
-      // Cloudinary URL — pass directly as image_url
       imageContent = {
         type: 'image_url',
         image_url: { url: imagePathOrUrl }
       }
     } else {
-      // Local file — read and convert to base64
       const imageData = fs.readFileSync(imagePathOrUrl).toString('base64')
       const ext = imagePathOrUrl.split('.').pop().toLowerCase()
       const mimeType = ext === 'png' ? 'image/png' : 'image/jpeg'
@@ -51,7 +54,7 @@ const analyzeImage = async (imagePathOrUrl, lang = 'en') => {
           ]
         }
       ],
-      max_tokens: 500
+      max_tokens: 600
     })
 
     const text = result.choices[0].message.content.trim()
