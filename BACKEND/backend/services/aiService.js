@@ -1,9 +1,8 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai')
+const Groq = require('groq-sdk')
 const fs = require('fs')
-const path = require('path')
 require('dotenv').config()
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
 const PROMPT = `Analyze this marine or water body photo.
 Return ONLY valid JSON, no markdown, no backticks, no extra text:
@@ -17,15 +16,25 @@ CoralWatch scale: 0=healthy, 1=pale, 2=partial bleach, 3=mostly bleached, 4=full
 
 const analyzeImage = async (imagePath, lang = 'en') => {
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
-    const imageData = {
-      inlineData: {
-        data: fs.readFileSync(imagePath).toString('base64'),
-        mimeType: 'image/jpeg'
-      }
-    }
-    const result = await model.generateContent([PROMPT, imageData])
-    const text = result.response.text().trim()
+    const imageData = fs.readFileSync(imagePath).toString('base64')
+    const ext = imagePath.split('.').pop().toLowerCase()
+    const mimeType = ext === 'png' ? 'image/png' : 'image/jpeg'
+
+    const result = await groq.chat.completions.create({
+      model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+      messages: [
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: PROMPT },
+            { type: 'image_url', image_url: { url: `data:${mimeType};base64,${imageData}` } }
+          ]
+        }
+      ],
+      max_tokens: 500
+    })
+
+    const text = result.choices[0].message.content.trim()
     const clean = text.replace(/```json|```/g, '').trim()
     const parsed = JSON.parse(clean)
     return { ...parsed, aiProcessed: true }
