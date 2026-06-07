@@ -1,15 +1,20 @@
 const multer = require('multer')
-const path = require('path')
-const fs = require('fs')
+const { CloudinaryStorage } = require('multer-storage-cloudinary')
+const cloudinary = require('cloudinary').v2
+require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') })
 
-const uploadDir = 'uploads/'
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir)
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+})
 
-const storage = multer.diskStorage({
-  destination: uploadDir,
-  filename: (req, file, cb) => {
-    const unique = `${Date.now()}-${Math.round(Math.random()*1e9)}`
-    cb(null, unique + path.extname(file.originalname))
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: 'oceanlens',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+    transformation: [{ width: 1200, quality: 'auto' }]
   }
 })
 
