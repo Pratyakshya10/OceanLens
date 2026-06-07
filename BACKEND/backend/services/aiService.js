@@ -1,10 +1,12 @@
 const Groq = require('groq-sdk')
 const fs = require('fs')
-require('dotenv').config()
+require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') })
+console.log('GROQ KEY:', process.env.GROQ_API_KEY ? 'FOUND' : 'MISSING')
+
 
 let groq = null
 const getGroq = () => {
-  if (!groq) groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
+  if (!groq) groq = new Groq({ apiKey: process.env.GROQ_API_KEY})
   return groq
 }
 
